@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx-certbot
+    container_name: nginx-certbot
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      - nginxcerts:/etc/letsencrypt
+    environment:
+      env_domain: blog.mirimonhub.com
+      env_admin_email: ktw07182@gmail.com
+      env_proxy_host: wordpress
+      env_proxy_port: 80
+    entrypoint: /start.sh
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: mysqluser
+      WORDPRESS_DB_PASSWORD: mysqlpass
+      WORDPRESS_DB_NAME: wordpressdb
+    restart: always
+    volumes:
+      - wordpress_data:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpressdb
+      MYSQL_USER: mysqluser
+      MYSQL_PASSWORD: mysqlpass
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  nginxcerts:
+  db_data:
+  wordpress_data:
+
